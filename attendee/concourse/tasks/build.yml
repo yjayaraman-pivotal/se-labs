@@ -15,7 +15,7 @@ outputs:
 run:
   path: ./se-labs/attendee/concourse/tasks/build.sh
   args: [
-    --input-dir, ./se-labs/attendee,
+    --input-dir, se-labs,
     --output-dir, build,
     --version-file, version/number,
     --artifactId, attendee,

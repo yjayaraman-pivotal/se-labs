@@ -64,4 +64,4 @@ mvn clean package -DfinalName=$finalName -Dversion=$version
 
 # Copy war file to concourse output folder
 cd ..
-cp $inputDir/target/$artifactName $outputDir/$artifactName
+cp $inputDir/attendee/target/$artifactName $outputDir/$artifactName
