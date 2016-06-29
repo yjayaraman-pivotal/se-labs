@@ -1,0 +1,23 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: stephenreed/jenkins-java8-maven-git
+    tag: latest
+
+inputs:
+  - name: se-labs
+  - name: version
+
+outputs:
+  - name: build
+
+run:
+  path: ./se-labs/attendee/concourse/tasks/build.sh
+  args: [
+    --input-dir, se-labs/attendee,
+    --output-dir, build,
+    --version-file, version/number,
+    --artifactId, attendee,
+    --packaging, jar
+  ]

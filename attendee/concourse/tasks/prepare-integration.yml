@@ -1,0 +1,25 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: stephenreed/jenkins-java8-maven-git
+    tag: latest
+
+inputs:
+  - name: se-labs
+  - name: candidate-release
+  - name: version
+
+outputs:
+  - name: prepare-integration
+
+run:
+  path: ./se-labs/attendee/concourse/tasks/prepare-integration.sh
+  args: [
+    --input-dir, candidate-release,
+    --output-dir, prepare-integration,
+    --version-file, version/number,
+    --manifest, se-labs/attendee/manifest.yml,
+    --artifactId, attendee,
+    --packaging, jar
+  ]

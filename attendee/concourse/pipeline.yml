@@ -1,0 +1,85 @@
+---
+resources:
+- name: se-labs
+  type: git
+  source:
+    uri: {{github-uri}}
+    branch: {{github-branch}}
+
+- name: version
+  type: semver
+  source:
+    bucket: {{s3-bucket-version}}
+    initial_version: 1.0.0-rc.0
+    key: current-version
+    access_key_id: {{s3-access-key-id}}
+    secret_access_key: {{s3-secret-access-key}}
+    endpoint: {{s3-endpoint}}
+
+- name: candidate-release
+  type: s3
+  source:
+    bucket: {{s3-bucket-release-candidates}}
+    regexp: attendee-(.*).jar
+    access_key_id: {{s3-access-key-id}}
+    secret_access_key: {{s3-secret-access-key}}
+    endpoint: {{s3-endpoint}}
+
+- name: final-release
+  type: s3
+  source:
+    bucket: {{s3-bucket-releases}}
+    regexp: attendee-(.*).jar
+    access_key_id: {{s3-access-key-id}}
+    secret_access_key: {{s3-secret-access-key}}
+    endpoint: {{s3-endpoint}}
+
+- name: cf
+  type: cf
+  source:
+    api: {{cf-api}}
+    username: {{cf-username}}
+    password: {{cf-password}}
+    organization: {{cf-org}}
+    space: {{cf-space}}
+    skip_cert_check: true
+
+jobs:
+- name: unit-test
+  serial: true
+  plan:
+  - get: se-labs
+    trigger: true
+  - task: unit-test
+    file: se-labs/attendee/concourse/tasks/unit-test.yml
+
+- name: build-rc
+  serial_groups: [version]
+  plan:
+  - get: se-labs
+    passed: [unit-test]
+    trigger: true
+  - get: version
+    params: {pre: rc}
+  - task: build
+    file: se-labs/attendee/concourse/tasks/build.yml
+  - put: candidate-release
+    params: {file: build/attendee-*.jar}
+  - put: version
+    params: {file: version/number}
+
+- name: prepare-integration
+  serial_groups: [version]
+  plan:
+  - get: se-labs
+    passed: [build-rc]
+    trigger: true
+  - get: candidate-release
+    passed: [build-rc]
+    trigger: true
+  - get: version
+  - task: prepare-integration
+    file: se-labs/attendee/concourse/tasks/prepare-integration.yml
+  - put: cf
+    params:
+          manifest: prepare-integration/manifest.yml
