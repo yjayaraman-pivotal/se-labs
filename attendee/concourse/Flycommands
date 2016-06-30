@@ -1,0 +1,14 @@
+# Download FLY tool from http://192.168.100.4:8080
+#copy it to /usr/bin
+# 1 Target Concourse now 
+./fly -t ci login -c http://192.168.100.4:8080
+#
+#
+#Set pipeline 
+#                         <name>              <youryml>                      accesskeys                        
+./fly -t ci set-pipeline -p flight-school -c ci/pipeline.yml --load-vars-from  cred.yml
+
+#
+#
+# Unset pipeline 
+./fly destroy-pipeline -t ci -p PhotoService
